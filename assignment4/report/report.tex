@@ -12,7 +12,7 @@
 \usepackage{float}
 \usepackage{siunitx}
 
-\graphicspath{{../plots/}}
+\graphicspath{{../}}
 
 \title{\textbf{Assignment 4: Kalman Filter and Parameter Estimation}\\[4pt]
        \large 02417 Time Series Analysis --- Spring 2026 \\
@@ -53,7 +53,7 @@ mean-reversion rate are the same.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=.85\linewidth]{p1_trajectories.pdf}
+  \includegraphics[width=.85\linewidth]{plots/p1_trajectories.pdf}
   \caption{Five independent realizations of \eqref{eq:ss1d} with $a=0.9,b=1,\sigma_1=1$.}
   \label{fig:p1-trajectories}
 \end{figure}
@@ -68,7 +68,7 @@ the regressor is measured with error. This motivates the Kalman filter.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=.85\linewidth]{p1_latent_vs_obs.pdf}
+  \includegraphics[width=.85\linewidth]{plots/p1_latent_vs_obs.pdf}
   \caption{Latent state and noisy observation (single realization).}
   \label{fig:p1-latent-vs-obs}
 \end{figure}
@@ -93,7 +93,7 @@ observation; the standardized innovations pass the Ljung--Box test at lag 10
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=.95\linewidth]{p1_kf_tracking.pdf}
+  \includegraphics[width=.95\linewidth]{plots/p1_kf_tracking.pdf}
   \caption{One-step predictions, 95\% CI, true state and observations.}
   \label{fig:p1-kf}
 \end{figure}
@@ -114,7 +114,7 @@ Fig.~\ref{fig:p1-mle-box} and Table~\ref{tab:p1-mle}.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\linewidth]{p1_mle_boxplots.pdf}
+  \includegraphics[width=\linewidth]{plots/p1_mle_boxplots.pdf}
   \caption{Boxplots of estimated $\hat a,\hat b,\hat\sigma_1$ across three cases (red star~=~truth).}
   \label{fig:p1-mle-box}
 \end{figure}
@@ -155,7 +155,7 @@ infinite variance.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=.7\linewidth]{p1_tdens.pdf}
+  \includegraphics[width=.7\linewidth]{plots/p1_tdens.pdf}
   \caption{Student-$t$ densities vs.\ standard normal.}
   \label{fig:p1-tdens}
 \end{figure}
@@ -165,7 +165,7 @@ noise (Fig.~\ref{fig:p1-robust}, Table~\ref{tab:p1-robust}).
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\linewidth]{p1_robustness_box.pdf}
+  \includegraphics[width=\linewidth]{plots/p1_robustness_box.pdf}
   \caption{Estimates under Student-$t$ process noise (log-scale for $\hat\sigma_1$).}
   \label{fig:p1-robust}
 \end{figure}
@@ -197,7 +197,7 @@ $M$-estimation, outlier rejection) would be preferable.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=.95\linewidth]{p2_eda.pdf}
+  \includegraphics[width=.95\linewidth]{plots/p2_eda.pdf}
   \caption{Transformer temperature $Y_t$, outdoor temperature $T_{a,t}$, solar
   radiation $\Phi_{s,t}$ and load $\Phi_{I,t}$ (hourly, one week).}
   \label{fig:p2-eda}
@@ -243,12 +243,12 @@ digital-sensor precision.
 \begin{figure}[H]
   \centering
   \begin{subfigure}{.54\linewidth}
-    \includegraphics[width=\linewidth]{p2_1d_pred.pdf}
+    \includegraphics[width=\linewidth]{plots/p2_1d_pred.pdf}
     \caption{1-step predictions.}
   \end{subfigure}
   \hfill
   \begin{subfigure}{.44\linewidth}
-    \includegraphics[width=\linewidth]{p2_1d_diag.pdf}
+    \includegraphics[width=\linewidth]{plots/p2_1d_diag.pdf}
     \caption{Residual diagnostics.}
   \end{subfigure}
   \caption{1-D state-space model.}
@@ -287,12 +287,12 @@ log-likelihood is retained.
 \begin{figure}[H]
   \centering
   \begin{subfigure}{.54\linewidth}
-    \includegraphics[width=\linewidth]{p2_2d_pred.pdf}
+    \includegraphics[width=\linewidth]{plots/p2_2d_pred.pdf}
     \caption{1-step predictions.}
   \end{subfigure}
   \hfill
   \begin{subfigure}{.44\linewidth}
-    \includegraphics[width=\linewidth]{p2_2d_diag.pdf}
+    \includegraphics[width=\linewidth]{plots/p2_2d_diag.pdf}
     \caption{Residual diagnostics.}
   \end{subfigure}
   \caption{2-D state-space model.}
@@ -348,7 +348,7 @@ physically plausible.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=.9\linewidth]{p2_2d_states.pdf}
+  \includegraphics[width=.9\linewidth]{plots/p2_2d_states.pdf}
   \caption{Reconstructed latent states (top) and standardized inputs (bottom).}
   \label{fig:p2-2d-states}
 \end{figure}
