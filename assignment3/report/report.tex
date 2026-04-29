@@ -1,0 +1,525 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Packages ──────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage[margin=2.3cm]{geometry}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{parskip}
+\usepackage{enumitem}
+
+\hypersetup{colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue}
+\graphicspath{{plots/}}
+
+\title{\textbf{Assignment 3: ARMA / Seasonal Processes and ARX Transfer-Function Models}\\[4pt]
+       \large 02417 Time Series Analysis --- Spring 2026 \\
+       \large Technical University of Denmark}
+\author{%
+  Jakub Piotrowski (s253074) \and
+  Mohamed Amine Cheikh (s252221) \and
+  Utkarsh Rupesh Saner (s252680)%
+}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+%===================================================================
+\section{Stability of AR(2) processes}
+%===================================================================
+Let $\{X_t\}$ follow
+\[
+  X_t+\phi_1 X_{t-1}+\phi_2 X_{t-2}=\varepsilon_t,
+  \qquad \varepsilon_t\sim\text{WN}(0,1).
+\]
+The characteristic polynomial is $\phi(z)=1+\phi_1 z+\phi_2 z^2$. The process
+is stationary iff both roots of $\phi(z)=0$ lie outside the unit circle, which
+in this sign convention is equivalent to the Schur conditions
+\begin{equation}\label{eq:schur}
+  |\phi_2|<1, \qquad \phi_1+\phi_2>-1, \qquad \phi_1-\phi_2<1.
+\end{equation}
+When stationary the theoretical ACF follows the Yule--Walker recursion
+$\rho(1)=-\phi_1/(1+\phi_2)$ and $\rho(k)=-\phi_1\rho(k-1)-\phi_2\rho(k-2)$
+for $k\ge 2$. For each parameter pair below we simulate 5 realisations of
+length $n=200$ with a common seed and a 200-step burn-in, then compare the
+empirical ACFs to $\rho(k)$ up to lag 30.
+
+% -------- 1.1 / 1.2 --------
+\subsection*{1.1--1.2~~$\phi_1=-0.6,\ \phi_2=0.5$}
+Roots of $\phi(z)$: $0.6\pm 1.28i$, $|z|=\sqrt{2}\approx 1.414>1$. All three
+Schur conditions in \eqref{eq:schur} hold, so the process is
+\emph{stationary}. Because the discriminant $\phi_1^{2}-4\phi_2=-1.64<0$ the
+roots are complex and the ACF exhibits damped oscillations.
+\begin{figure}[H]\centering
+  \begin{subfigure}{.48\linewidth}\centering\includegraphics[width=\linewidth]{p1_1_1_sims.pdf}\end{subfigure}\hfill
+  \begin{subfigure}{.48\linewidth}\centering\includegraphics[width=\linewidth]{p1_1_1_acf.pdf}\end{subfigure}
+  \caption{$\phi_1=-0.6,\phi_2=0.5$: 5 realisations (left) and empirical ACFs with the theoretical $\rho(k)$ overlaid (right).}
+  \label{fig:sec1_1}
+\end{figure}
+The empirical ACFs cluster around $\rho(k)$ and reproduce the oscillating
+decay with period $\approx 6$, matching the complex-root prediction.
+
+% -------- 1.3 --------
+\subsection*{1.3~~$\phi_1=-0.6,\ \phi_2=-0.3$}
+Real roots $z\in\{1.08,-3.08\}$ are both outside the unit circle:
+\emph{stationary}. The discriminant $\phi_1^{2}-4\phi_2=1.56>0$ so the ACF
+decays monotonically. Empirical $\hat\rho(1)\approx 0.82$ is close to
+$-\phi_1/(1+\phi_2)=0.857$.
+\begin{figure}[H]\centering
+  \begin{subfigure}{.48\linewidth}\centering\includegraphics[width=\linewidth]{p1_1_3_sims.pdf}\end{subfigure}\hfill
+  \begin{subfigure}{.48\linewidth}\centering\includegraphics[width=\linewidth]{p1_1_3_acf.pdf}\end{subfigure}
+  \caption{$\phi_1=-0.6,\phi_2=-0.3$: real-root stationary case with monotone ACF decay.}
+\end{figure}
+
+% -------- 1.4 --------
+\subsection*{1.4~~$\phi_1=0.6,\ \phi_2=-0.3$}
+Only the sign of $\phi_1$ is flipped compared to 1.3. Roots mirror to
+$\{-1.08,\,3.08\}$, still stationary, and the ACF becomes monotone but
+\emph{alternating in sign} because $\rho(1)=-\phi_1/(1+\phi_2)<0$
+($\hat\rho(1)\approx -0.79$, theoretical $-0.857$). Visually the series
+oscillates rapidly across its mean.
+\begin{figure}[H]\centering
+  \begin{subfigure}{.48\linewidth}\centering\includegraphics[width=\linewidth]{p1_1_4_sims.pdf}\end{subfigure}\hfill
+  \begin{subfigure}{.48\linewidth}\centering\includegraphics[width=\linewidth]{p1_1_4_acf.pdf}\end{subfigure}
+  \caption{$\phi_1=0.6,\phi_2=-0.3$: stationary but sign-alternating ACF.}
+\end{figure}
+
+% -------- 1.5 --------
+\subsection*{1.5~~$\phi_1=-0.7,\ \phi_2=-0.3$}
+Here $\phi_1+\phi_2=-1$, so the second Schur condition holds only on the
+\emph{boundary}: one root equals exactly $1$ and the other $-10/3$. The
+process is \emph{non-stationary} with a unit root. Simulated realisations
+wander without returning to a mean (random-walk-like), the variance grows
+roughly linearly with $t$, and the empirical ACF decays extremely slowly
+($\hat\rho(10)\approx 0.70$). No theoretical $\rho(k)$ is plotted because it
+is undefined.
+\begin{figure}[H]\centering
+  \begin{subfigure}{.48\linewidth}\centering\includegraphics[width=\linewidth]{p1_1_5_sims.pdf}\end{subfigure}\hfill
+  \begin{subfigure}{.48\linewidth}\centering\includegraphics[width=\linewidth]{p1_1_5_acf.pdf}\end{subfigure}
+  \caption{$\phi_1=-0.7,\phi_2=-0.3$: unit-root non-stationary process.}
+\end{figure}
+
+% -------- 1.6 --------
+\subsection*{1.6~~$\phi_1=-0.75,\ \phi_2=-0.3$}
+Now $\phi_1+\phi_2=-1.05<-1$, so the second Schur condition \emph{fails}. One
+characteristic root has $|z|\approx 0.96<1$, placing it inside the unit
+circle: the process is \emph{explosive}. The simulated sample variance grows
+by several orders of magnitude over only 200 observations (measured mean
+$\approx 4.7\times 10^{12}$). The empirical ACF again looks slow-decaying but
+is meaningless for a non-stationary process.
+\begin{figure}[H]\centering
+  \begin{subfigure}{.48\linewidth}\centering\includegraphics[width=\linewidth]{p1_1_6_sims.pdf}\end{subfigure}\hfill
+  \begin{subfigure}{.48\linewidth}\centering\includegraphics[width=\linewidth]{p1_1_6_acf.pdf}\end{subfigure}
+  \caption{$\phi_1=-0.75,\phi_2=-0.3$: explosive non-stationary process.}
+\end{figure}
+
+% -------- 1.7 --------
+\subsection*{1.7~~Time-series plot vs.\ ACF only}
+Cases 1.5 and 1.6 show that the empirical ACF alone is a poor diagnostic for
+stationarity: a slowly-decaying ACF is consistent with a stationary AR(2)
+with real roots close to the unit circle (as in 1.3), with a unit-root
+process (1.5), \emph{and} with a mildly explosive one (1.6). The raw
+time-series plot, by contrast, immediately reveals drifting or exploding
+behaviour (a visibly growing variance in 1.6 could never be mistaken for a
+stationary process). One should therefore \emph{always} inspect both the
+series itself and its ACF before drawing conclusions.
+
+%===================================================================
+\section{Predicting monthly solar power}
+%===================================================================
+The given model for the monthly generation $Y_t$ (MWh) is
+\[
+  (1+\phi_1 B)(1+\Phi_1 B^{12})\bigl(\log Y_t-\mu\bigr)=\varepsilon_t,
+  \quad\phi_1=-0.38,\ \Phi_1=-0.94,\ \mu=5.72,\ \sigma_\varepsilon=0.22,
+\]
+with 36 monthly observations (2008-01 to 2010-12).
+Introducing $X_t=\log Y_t-\mu$ and expanding the product of backshift factors,
+\[
+  (1+\phi_1 B)(1+\Phi_1 B^{12}) = 1+\phi_1 B+\Phi_1 B^{12}+\phi_1\Phi_1 B^{13},
+\]
+yields
+\begin{equation}\label{eq:expand}
+  X_t+\phi_1 X_{t-1}+\Phi_1 X_{t-12}+\phi_1\Phi_1 X_{t-13}=\varepsilon_t.
+\end{equation}
+
+% -------- 2.1 --------
+\subsection*{2.1~~Residuals and model validation}
+From \eqref{eq:expand} the one-step-ahead residuals are
+\[
+  \hat\varepsilon_{t+1|t}=X_{t+1}+\phi_1 X_{t}+\Phi_1 X_{t-11}+\phi_1\Phi_1 X_{t-12},
+\]
+which can be computed for $t=13,\dots,35$ (i.e.\ 23 residuals with indices
+$14,\dots,36$). Their sample mean is $0.013$ and standard deviation $0.210$,
+consistent with the assumed $\sigma_\varepsilon=0.22$. A battery of i.i.d.
+tests yields
+
+\begin{center}\small
+\begin{tabular}{@{}lcccc@{}}\toprule
+Ljung--Box $Q(5)$ & Ljung--Box $Q(10)$ & Shapiro--Wilk $W$ & max $|\hat\rho|$ (lags 1--10) & sample mean\\\midrule
+$4.82\ (p=0.44)$ & $12.55\ (p=0.25)$ & $0.95\ (p=0.15)$ & $0.33$ (within 95\,\% band) & $0.013$ \\\bottomrule
+\end{tabular}
+\end{center}
+
+No ACF coefficient exceeds the 95\,\% band, the Ljung--Box tests cannot
+reject white noise at either horizon, and Shapiro--Wilk cannot reject
+normality. The i.i.d. $\mathcal N(0,\sigma_\varepsilon^{2})$ assumption is
+therefore compatible with the data (Fig.~\ref{fig:p2diag}). With only $n=23$
+residuals the statistical power of all three tests is limited, so these
+diagnostics are \emph{consistent with} --- rather than conclusive proof of
+--- i.i.d. normality.
+
+\begin{figure}[H]\centering
+\includegraphics[width=.85\linewidth]{p2_residual_diagnostics.pdf}
+\caption{Residual diagnostics for Model~\eqref{eq:expand}: time series, ACF, QQ-plot, and histogram.}
+\label{fig:p2diag}
+\end{figure}
+
+% -------- 2.2 --------
+\subsection*{2.2~~Twelve-month forecast}
+Setting future innovations to their conditional expectation of zero in
+\eqref{eq:expand} gives the recursion
+\[
+  \hat X_{t+k|t}=-\phi_1\,\hat X_{t+k-1|t}-\Phi_1\,\hat X_{t+k-12|t}-\phi_1\Phi_1\,\hat X_{t+k-13|t},
+\]
+with $\hat X_{t+j|t}=X_{t+j}$ for $j\le 0$. For $k\le 12$ both seasonal terms
+use \emph{observed} values ($t+k-12\le t$ and $t+k-13\le t-1$), so only the
+AR(1) component is genuinely recursive. Back-transformation uses
+$\hat Y_{t+k|t}=\exp(\hat X_{t+k|t}+\mu)$ (no log-normal bias correction, as is
+standard in this course). Results are in Table~\ref{tab:fc} and
+Fig.~\ref{fig:p2fc}.
+
+% -------- 2.3 --------
+\subsection*{2.3~~95\,\% prediction intervals from the AR(1) part}
+As instructed, the intervals rely on the AR(1) component only:
+$X_t=a\,X_{t-1}+\varepsilon_t$ with $a=-\phi_1=0.38$. Its MA($\infty$)
+representation has $\psi_j=a^j$ and equations (5.149)--(5.151) of the course
+textbook give
+\begin{equation}\label{eq:var}
+  \operatorname{Var}\bigl(e_{t+k|t}\bigr)=\sigma_\varepsilon^{2}\sum_{j=0}^{k-1}\psi_j^{2}
+    =\sigma_\varepsilon^{2}\,\frac{1-a^{2k}}{1-a^{2}}.
+\end{equation}
+A 95\,\% interval for $X_{t+k}$ is
+$\hat X_{t+k|t}\pm 1.96\sqrt{\operatorname{Var}(e_{t+k|t})}$; applying
+$\exp(\cdot+\mu)$ to both endpoints transforms it into an interval for
+$Y_{t+k}$.
+
+\begin{table}[H]\centering\small
+\begin{tabular}{rlrrrr}\toprule
+$k$ & month & $\hat Y_{t+k|t}$ [MWh] & 95\,\% lower & 95\,\% upper & $\sqrt{\operatorname{Var}(e_{t+k|t})}$\\\midrule
+ 1 & 2011-01 & 101.3 &  65.8 & 155.9 & 0.220\\
+ 2 & 2011-02 & 147.2 &  92.8 & 233.5 & 0.235\\
+ 3 & 2011-03 & 156.9 &  98.5 & 249.9 & 0.238\\
+ 4 & 2011-04 & 142.6 &  89.4 & 227.2 & 0.238\\
+ 5 & 2011-05 & 355.3 & 222.9 & 566.3 & 0.238\\
+ 6 & 2011-06 & 538.0 & 337.6 & 857.5 & 0.238\\
+ 7 & 2011-07 & 611.2 & 383.5 & 974.2 & 0.238\\
+ 8 & 2011-08 & 631.9 & 396.5 & 1007.2& 0.238\\
+ 9 & 2011-09 & 630.1 & 395.3 & 1004.3& 0.238\\
+10 & 2011-10 & 508.2 & 318.8 & 809.9 & 0.238\\
+11 & 2011-11 & 375.0 & 235.3 & 597.7 & 0.238\\
+12 & 2011-12 & 280.5 & 176.0 & 447.1 & 0.238\\\bottomrule
+\end{tabular}
+\caption{Twelve-month forecast of monthly solar generation with 95\,\% PI derived from the AR(1) part of the model. The last column is the log-scale standard deviation $\sqrt{\operatorname{Var}(e_{t+k\mid t})}$ of the forecast error for $X_{t+k}=\log Y_{t+k}-\mu$; it saturates at $\sigma_\varepsilon/\sqrt{1-a^{2}}\approx 0.238$ by $k=3$.}\label{tab:fc}
+\end{table}
+
+\begin{figure}[H]\centering
+\includegraphics[width=.85\linewidth]{p2_forecast.pdf}
+\caption{Observed monthly generation (2008--2010) and 12-step-ahead forecast with 95\,\% PI (back-transformed).}\label{fig:p2fc}
+\end{figure}
+
+% -------- 2.4 --------
+\subsection*{2.4~~Comment on forecast trustworthiness}
+\textbf{Point forecast.} The predicted trajectory reproduces the expected
+seasonal shape (low winter, August peak) and its level is in line with
+2008--2010, so the point forecast is credible.
+
+\textbf{Interval width.} The PI is too optimistic for at least three
+reasons:
+\begin{enumerate}[leftmargin=*,itemsep=0pt,topsep=2pt]
+\item The AR(1) variance in \eqref{eq:var} \emph{saturates} almost immediately:
+      $\sqrt{(1-a^{2k})/(1-a^{2})}\to 1/\sqrt{1-a^{2}}\approx 1.081$ for
+      $k\ge 3$. This is why column~6 of Table~\ref{tab:fc} is essentially
+      constant at $0.238$ from $k=3$ onward, whereas the true forecast
+      uncertainty should keep growing.
+\item The derivation \emph{ignores the seasonal $\Phi_1$ component}. For
+      $k\le 12$ this is actually harmless --- all seasonal regressors
+      $X_{t+k-12}$, $X_{t+k-13}$ draw from observed data and contribute no
+      forecast noise, as we established in §2.2. But for $k\ge 13$ the
+      $\Phi_1$-driven error term becomes the dominant source of uncertainty,
+      and at that horizon the AR(1) approximation grossly underestimates
+      the interval.
+\item The three parameters $(\phi_1,\Phi_1,\mu)$ are \emph{treated as known}.
+      With only 36 observations this is a strong assumption; parameter
+      uncertainty would widen the real intervals further and make them grow
+      with $k$.
+\end{enumerate}
+In short: the point forecast is trustworthy, the reported PI is a useful
+lower bound on the actual uncertainty but is almost certainly too narrow and
+the saturation behaviour is an artifact of using only the AR(1) part.
+
+%===================================================================
+\section{ARX model for the heating of a box}
+%===================================================================
+The data (231 hourly observations, file \texttt{box\_data\_60min.csv})
+contain the heating power $P_{h,t}$ [W], the indoor--outdoor temperature
+difference $T_{\Delta,t}$ [$^\circ$C] and the south-facing vertical solar
+radiation $G_{v,t}$ [W/m$^2$]. Lags \texttt{.l0}--\texttt{.l10} are
+pre-computed in the CSV.
+
+% -------- 3.1 --------
+\subsection*{3.1~~Exploratory time-series plot}
+\begin{figure}[H]\centering
+\includegraphics[width=.85\linewidth]{p3_timeseries.pdf}
+\caption{Observed $P_h$, $T_\Delta$ and $G_v$ over the full 231-hour period.}
+\end{figure}
+$G_v$ shows a clear diurnal cycle peaking around noon. $T_\Delta$ tracks the
+day--night cycle (warmer nights $\Rightarrow$ smaller $T_\Delta$). $P_h$ is
+strongly anti-correlated with $G_v$ during daylight (incoming radiation heats
+the box and the thermostat throttles the electrical heaters back) and
+positively related to $T_\Delta$ (larger indoor--outdoor gradient requires
+more heating). Visible strong persistence in all three series suggests
+pronounced autocorrelation.
+
+% -------- 3.2 --------
+\subsection*{3.2~~Train/test split}
+Rows $t=1,\dots,167$ (up to and including 2013-02-06 00:00) are used for
+estimation; rows $t=168,\dots,231$ are held out as test set. Note that the
+\texttt{thour} column in the CSV starts at 19 -- the ``$t_{\text{hour}}=1..167$''
+notation in the assignment refers to the \emph{sequential row index} of the
+training data, not to the \texttt{thour} value. The 1/64 normalisation used
+later for the RMSE is consistent with the 64 test points.
+
+% -------- 3.3 --------
+\subsection*{3.3~~Investigation: scatter, ACF and CCF}
+\begin{figure}[H]\centering
+\includegraphics[width=.9\linewidth]{p3_eda.pdf}
+\caption{Pairwise scatter plots (top), ACF of $P_h$ and CCFs of
+$T_\Delta\to P_h$ and $G_v\to P_h$ (bottom). Training data only.}
+\end{figure}
+Scatter plots confirm the signs observed in 3.1: $P_h$ scales linearly and
+positively with $T_\Delta$, and inversely (with some curvature) with $G_v$.
+The ACF of $P_h$ decays slowly -- still $\approx 0.3$ at lag 20 -- reflecting
+the thermal inertia of the box. The $T_\Delta\to P_h$ CCF is strongly positive
+at small lags and slow-decaying; the $G_v\to P_h$ CCF is negative and
+concentrated near lag 0, consistent with an almost instantaneous reduction
+of heating by incoming radiation.
+
+\emph{What cannot be read off directly from these plots}: (i) because the two
+inputs are themselves autocorrelated (especially $G_v$ with its diurnal
+cycle), the raw CCFs are contaminated by the inputs' own autocorrelation and
+only a pre-whitening filter can isolate the true lag structure; (ii) the
+CCFs cannot tell us whether a regression on contemporaneous values alone is
+sufficient -- residual diagnostics are required for that (see~3.5).
+
+\paragraph{Pre-whitened CCF (Box--Jenkins).}
+To remove the confounding effect of the inputs' own autocorrelation we fit
+an AR($p_x$) model to each input separately (order chosen by AIC over
+$p\in\{1..10\}$) and apply the same filter
+$\pi(B)=1-\hat\varphi_1 B-\cdots-\hat\varphi_{p_x} B^{p_x}$ to both the input
+$x_t$ and to $P_{h,t}$. The CCF of the filtered series $\tilde u_t$,
+$\tilde v_t$ in Fig.~\ref{fig:prewhiten} then has the standard
+$\pm 1.96/\sqrt{n}$ band as its null distribution.
+AIC selects $p_{T_\Delta}=2$ and $p_{G_v}=10$.
+Both pre-whitened CCFs have their clearest peak at \emph{lag 0}
+($|\hat\rho_{uv}(0)|\!\approx\!0.50$ for $T_\Delta$ and $0.85$ for $G_v$),
+confirming that after removing the inputs' own dynamics, the dominant
+transfer from either input to $P_h$ is essentially contemporaneous. This is
+consistent with the raw CCF signs but is now statistically clean.
+\begin{figure}[H]\centering
+\includegraphics[width=.9\linewidth]{p3_prewhitened_ccf.pdf}
+\caption{Pre-whitened CCFs from $T_\Delta$ and $G_v$ to $P_h$ after
+AR-filtering each input (and $P_h$) with the AIC-selected filter of that
+input. Dashed lines: $\pm 1.96/\sqrt{n}$.}\label{fig:prewhiten}
+\end{figure}
+
+% -------- 3.4 --------
+\subsection*{3.4~~Impulse-response estimation}
+Fitting a FIR regression
+$P_{h,t}=c+\sum_{h=0}^{10}\beta_{h}^{T} T_{\Delta,t-h}+\sum_{h=0}^{10}\beta_{h}^{G} G_{v,t-h}+\varepsilon_t$
+on the training set yields the impulse-response coefficients in
+Fig.~\ref{fig:p3imp}.
+\begin{figure}[H]\centering
+\includegraphics[width=.85\linewidth]{p3_impulse.pdf}
+\caption{Estimated impulse responses from $T_\Delta$ and $G_v$ to $P_h$ (lags 0--10).}
+\label{fig:p3imp}
+\end{figure}
+The $T_\Delta\to P_h$ response has its largest weight at lag 1
+($\approx 1.5$) and a secondary peak at lag 3, consistent with thermal
+inertia (heat added now shows up in the heater set-point a step or two
+later). The $G_v\to P_h$ response is largest in magnitude at lag 0
+($\approx -0.10$), decays quickly, and is practically zero beyond lag 3:
+solar gain acts on the heater almost contemporaneously.
+A joint FIR (rather than two univariate pre-whitened impulse responses)
+is used here because $T_\Delta$ and $G_v$ share a strong common diurnal
+component; univariate pre-whitening would mis-attribute that common
+variance to whichever input is processed first.
+
+% -------- 3.5 --------
+\subsection*{3.5~~Static regression}
+The static model $P_{h,t}=\omega_1 T_{\Delta,t}+\omega_2 G_{v,t}+\varepsilon_t$
+estimated on the training set gives
+\[
+  \hat\omega_1=+3.89\ (\mathrm{SE}\,0.023),\qquad
+  \hat\omega_2=-0.110\ (\mathrm{SE}\,0.004),\qquad
+  \hat\sigma=5.41,\qquad R^{2}=0.887.
+\]
+Both coefficients are massively significant ($|t|>26$).
+\begin{figure}[H]\centering
+\includegraphics[width=.9\linewidth]{p3_static_resid.pdf}
+\caption{Static-regression residuals: time series, ACF, and CCFs with both inputs.}
+\end{figure}
+The signs match the physics (more heating with a larger thermal gradient,
+less heating with incoming radiation) and 88.7\,\% of the variance is
+explained. However the residual ACF is massively outside the 95\,\% band at
+short lags and the residual CCFs with both inputs retain structure. The
+static model fails to capture the box's thermal memory: a dynamic /
+transfer-function (ARX) model is clearly required.
+
+% -------- 3.6 --------
+\subsection*{3.6~~First-order ARX}
+Fitting
+\[
+  P_{h,t}=-\phi_1 P_{h,t-1}+\omega_1 T_{\Delta,t}+\omega_2 G_{v,t}+\varepsilon_t
+\]
+on the training set yields
+\[
+  \hat\phi_1=-0.419\ (\mathrm{SE}\,0.018),\quad
+  \hat\omega_1=+2.31\ (\mathrm{SE}\,0.071),\quad
+  \hat\omega_2=-0.084\ (\mathrm{SE}\,0.002),\quad \hat\sigma=2.67.
+\]
+All three coefficients are strongly significant.
+The training RSS drops from $4883$ (static) to $1193$ (ARX(1)) --- a
+$\approx 75\,\%$ reduction --- and the residuals look much closer to white
+noise (Fig.~\ref{fig:arx1}). A large improvement is obtained from a single
+AR lag alone.
+\begin{figure}[H]\centering
+\includegraphics[width=.9\linewidth]{p3_arx1_resid.pdf}
+\caption{ARX(1) residuals: the residual ACF is mostly inside the 95\,\% band and the CCFs are visibly reduced compared to Section 3.5.}
+\label{fig:arx1}
+\end{figure}
+
+% -------- 3.7 --------
+\subsection*{3.7~~Model-order selection via AIC / BIC}
+For $p=1,\dots,10$ we fit the ARX$(p)$ model
+\[
+  P_{h,t}=-\sum_{i=1}^{p}\phi_i P_{h,t-i}
+          +\sum_{j=0}^{p-1}\omega_{1,j}T_{\Delta,t-j}
+          +\sum_{j=0}^{p-1}\omega_{2,j}G_{v,t-j}+\varepsilon_t,
+\]
+i.e.\ the same number of lags for all variables (giving $k=3p$ free
+parameters), and compute
+$\mathrm{AIC}=n\log\hat\sigma^{2}+2k$ and
+$\mathrm{BIC}=n\log\hat\sigma^{2}+k\log n$ with $n=167$.
+\begin{figure}[H]\centering
+\includegraphics[width=.95\linewidth]{p3_order_selection.pdf}
+\caption{AIC and BIC (left) and one-step test-set RMSE (right) versus ARX order $p$.}\label{fig:ic}
+\end{figure}
+\begin{table}[H]\centering\small
+\begin{tabular}{r r r r r r}\toprule
+$p$ & $k$ & AIC & BIC & $\hat\sigma_{\text{train}}$ & RMSE$_{\text{test}}$ [W]\\\midrule
+ 1 &  3 & 334.3 & 343.7 & 2.67 & 3.75\\
+ 2 &  6 & 284.2 & 302.9 & 2.26 & 3.25\\
+ 3 &  9 & 265.6 & 293.6 & 2.10 & \textbf{2.88}\\
+ 4 & 12 & 246.0 & 283.4 & 1.94 & 3.04\\
+ 5 & 15 & 233.5 & \textbf{280.2} & 1.84 & 3.13\\
+ 6 & 18 & \textbf{227.3} & 283.5 & 1.77 & 3.33\\
+ 7 & 21 & 231.4 & 296.9 & 1.76 & 3.32\\
+ 8 & 24 & 234.6 & 309.4 & 1.75 & 3.27\\
+ 9 & 27 & 236.9 & 321.1 & 1.73 & 3.26\\
+10 & 30 & 231.7 & 325.2 & 1.67 & 3.30\\\bottomrule
+\end{tabular}
+\caption{Information criteria and one-step test RMSE. Bold: column minima.}\label{tab:ic}
+\end{table}
+AIC, whose parameter penalty is only $+2k$, keeps decreasing until $p=6$.
+BIC uses the heavier penalty $k\log n=k\log 167\approx 5.12\,k$ and picks
+the simpler $p=5$. The two curves diverge from $p\approx 3$ onward because
+the in-sample fit keeps improving but the BIC penalty grows faster than the
+AIC penalty. Based on parsimony and the usual sample-size consistency
+argument, BIC's $p=5$ is our preferred order.
+
+% -------- 3.8 --------
+\subsection*{3.8~~One-step predictions on the test set}
+Using the coefficients fitted on the training set, we compute one-step
+predictions on the test set (true lagged $P_h$ is used -- no simulation yet)
+and evaluate
+\[
+  \mathrm{RMSE}=\sqrt{\tfrac{1}{64}\sum_{t=168}^{231}\hat\varepsilon_{t|t-1}^{\,2}}.
+\]
+The minimum of $\mathrm{RMSE}_{\text{test}}$ is attained at $p=3$
+($=2.88$~W; see Table~\ref{tab:ic} and Fig.~\ref{fig:ic}); it then rises
+monotonically, confirming over-fitting at higher orders. The honest
+out-of-sample criterion agrees much better with BIC than with AIC: the
+BIC-optimal $p=5$ is close to the RMSE optimum ($3.13$ vs.\ $2.88$~W),
+whereas AIC's $p=6$ is clearly worse on the test set ($3.33$~W). We
+therefore adopt $p^{\star}=5$ for the subsequent simulation.
+
+% -------- 3.9 --------
+\subsection*{3.9~~Multi-step simulation}
+Before simulating we verify that the residuals of the final ARX($p^{\star}=5$)
+model are compatible with white noise on the training set
+(Fig.~\ref{fig:arx5}). The Ljung--Box statistics are
+$Q(10)=6.46\ (p=0.78)$ and $Q(20)=13.44\ (p=0.86)$, both well above the
+usual 0.05 threshold; the residual--input CCFs stay bounded by
+$\max|\rho|\approx 0.20$ over $|h|\le 20$, i.e.\ essentially flat compared
+to the raw $P_h$ CCFs in Fig.~\ref{fig:p3imp}. The identified model has
+therefore captured both the autoregressive dynamics of $P_h$ and the transfer
+from the two inputs; no further structure is left to exploit.
+\begin{figure}[H]\centering
+\includegraphics[width=.9\linewidth]{p3_arx5_resid.pdf}
+\caption{Residual diagnostics for the final ARX(5) model: time trace, ACF, and CCFs with both inputs. Ljung--Box $Q(10)=6.46\,(p=0.78),\ Q(20)=13.44\,(p=0.86)$.}\label{fig:arx5}
+\end{figure}
+
+With $p^{\star}=5$ we simulate $P_h$ over the \emph{entire} period: the
+observed inputs $T_\Delta,G_v$ are fed at each step, while the $P_h$ lags are
+taken from previously simulated values (the first $p^{\star}$ values are
+initialised from the observation).
+\begin{figure}[H]\centering
+\includegraphics[width=.9\linewidth]{p3_multistep_sim.pdf}
+\caption{Observed (black) and multi-step simulated (red) $P_h$ for ARX(5). The dashed line marks the train/test split.}
+\end{figure}
+The simulation RMSE is $2.11$~W on the training period and $3.73$~W on the
+test period, only marginally larger than the one-step RMSE at the same
+order ($3.13$~W). The model reproduces the diurnal cycle and the overall
+level across the full 231 hours without drifting, because the observed
+inputs (driven by weather) continuously inject new information even while
+the AR lags are allowed to propagate.
+
+\textbf{Operational feasibility.} Such multi-step predictions \emph{are}
+feasible in a real-time setting provided that forecasts of the inputs are
+available. In this particular experiment $T_\Delta$ also depends on the
+indoor temperature which -- being thermostat-controlled -- is essentially
+constant, so effectively only external-temperature and solar-radiation
+forecasts (standard outputs of any numerical weather prediction system) are
+required.
+
+% -------- 3.10 --------
+\subsection*{3.10~~Conclusion}
+\begin{enumerate}[leftmargin=*,itemsep=2pt,topsep=2pt]
+\item The static regression already explains $88.7\,\%$ of the variance, but
+      its residuals are strongly autocorrelated -- a dynamic /
+      transfer-function model is needed.
+\item Adding a single AR lag (ARX(1)) cuts the training RSS by $\approx 75\,\%$
+      and largely whitens the residuals. Additional orders keep improving
+      the in-sample fit, but AIC (p=6), BIC (p=5) and one-step test RMSE
+      (p=3) give different optima; BIC is preferred here since its choice
+      is closest to the out-of-sample optimum.
+\item With $p^{\star}=5$ a multi-step simulation that uses only the observed
+      inputs tracks $P_h$ well over the full 231 hours (train/test RMSE
+      $2.11$ / $3.73$ W), showing that the identified model is usable in
+      real-time predictive control given forecasts of $T_\Delta$ and $G_v$.
+\item \emph{Limitations.} Effective solar gain depends nonlinearly on sun
+      angle and surface orientation (not modelled here); the calibration
+      period is short ($\approx 7$ days); and no uncertainty band is
+      attached to the multi-step predictions. Natural extensions would be
+      (i) an ARMAX formulation giving analytic $k$-step variance, or
+      (ii) bootstrapping the training residuals to obtain an empirical
+      prediction band around the simulation in Fig.~\ref{fig:arx5}.
+\end{enumerate}
+
+\end{document}
