@@ -1,0 +1,28 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Numerical caches (regenerable from scripts)
+*.npz
+*.pkl
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# A1 script writes figures to CWD on each run; canonical copy lives in assignment1/figures/
+/assignment1/fig_*.png
+
+# Local-only — not for the public repo
+_course_materials/
+**/feedback/
+**/report_backup.tex

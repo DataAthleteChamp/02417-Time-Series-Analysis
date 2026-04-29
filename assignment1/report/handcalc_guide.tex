@@ -1,0 +1,167 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{parskip}
+
+\title{Hand Calculation Guide\\[4pt]\large Sections 2.1 and 5.1 --- Copy This on Paper}
+\author{02417 Assignment 1}
+\date{}
+
+\begin{document}
+\maketitle
+
+%% ============================================================
+%% SECTION 2.1
+%% ============================================================
+\section*{Section 2.1 --- Matrix Form (write this on paper)}
+
+The linear trend model:
+\[
+Y_t = \theta_1 + \theta_2 \, x_t + \varepsilon_t, \qquad \varepsilon_t \sim N(0, \sigma^2), \quad t = 1, \ldots, N.
+\]
+
+In matrix form for the first 3 time points:
+\[
+\underbrace{\begin{bmatrix} Y_1 \\ Y_2 \\ Y_3 \end{bmatrix}}_{\boldsymbol{y}}
+=
+\underbrace{\begin{bmatrix} 1 & x_1 \\ 1 & x_2 \\ 1 & x_3 \end{bmatrix}}_{\boldsymbol{X}}
+\underbrace{\begin{bmatrix} \theta_1 \\ \theta_2 \end{bmatrix}}_{\boldsymbol{\theta}}
++
+\underbrace{\begin{bmatrix} \varepsilon_1 \\ \varepsilon_2 \\ \varepsilon_3 \end{bmatrix}}_{\boldsymbol{\varepsilon}}
+\]
+
+Inserting the actual values (3 decimal places):
+\[
+\boldsymbol{y} = \begin{bmatrix} 2.930 \\ 2.934 \\ 2.941 \end{bmatrix}, \qquad
+\boldsymbol{X} = \begin{bmatrix} 1 & 2018.000 \\ 1 & 2018.083 \\ 1 & 2018.167 \end{bmatrix}
+\]
+
+So the full equation with numbers is:
+\[
+\begin{bmatrix} 2.930 \\ 2.934 \\ 2.941 \end{bmatrix}
+=
+\begin{bmatrix} 1 & 2018.000 \\ 1 & 2018.083 \\ 1 & 2018.167 \end{bmatrix}
+\begin{bmatrix} \theta_1 \\ \theta_2 \end{bmatrix}
++
+\begin{bmatrix} \varepsilon_1 \\ \varepsilon_2 \\ \varepsilon_3 \end{bmatrix}
+\]
+
+\textbf{That's it for 2.1.} Write the general form, then plug in the numbers.
+
+\newpage
+
+%% ============================================================
+%% SECTION 5.1
+%% ============================================================
+\section*{Section 5.1 --- RLS Hand Calculation (write this on paper)}
+
+\subsection*{Step 0: Write the update equations}
+
+The RLS algorithm updates at each time step $t$:
+\begin{align}
+\boldsymbol{R}_t &= \boldsymbol{R}_{t-1} + \boldsymbol{x}_t \, \boldsymbol{x}_t^\top \label{eq:Rupdate}\\[6pt]
+\hat{\boldsymbol{\theta}}_t &= \hat{\boldsymbol{\theta}}_{t-1} + \boldsymbol{R}_t^{-1} \, \boldsymbol{x}_t \bigl( Y_t - \boldsymbol{x}_t^\top \hat{\boldsymbol{\theta}}_{t-1} \bigr) \label{eq:thetaupdate}
+\end{align}
+
+Initialize with:
+\[
+\boldsymbol{R}_0 = \begin{bmatrix} 0.1 & 0 \\ 0 & 0.1 \end{bmatrix}, \qquad
+\hat{\boldsymbol{\theta}}_0 = \begin{bmatrix} 0 \\ 0 \end{bmatrix}
+\]
+
+%% ----------------------------------------
+\subsection*{Iteration $t=1$}
+%% ----------------------------------------
+
+\textbf{Given:}
+\[
+\boldsymbol{x}_1 = \begin{bmatrix} 1 \\ 2018 \end{bmatrix}, \qquad y_1 = 2.930
+\]
+
+\textbf{Step 1 --- Compute $\boldsymbol{x}_1 \boldsymbol{x}_1^\top$:}
+\[
+\boldsymbol{x}_1 \boldsymbol{x}_1^\top
+= \begin{bmatrix} 1 \\ 2018 \end{bmatrix} \begin{bmatrix} 1 & 2018 \end{bmatrix}
+= \begin{bmatrix} 1 \times 1 & 1 \times 2018 \\ 2018 \times 1 & 2018 \times 2018 \end{bmatrix}
+= \begin{bmatrix} 1 & 2018 \\ 2018 & 4\,072\,324 \end{bmatrix}
+\]
+
+\textbf{Step 2 --- Compute $\boldsymbol{R}_1$:}
+\[
+\boldsymbol{R}_1 = \boldsymbol{R}_0 + \boldsymbol{x}_1 \boldsymbol{x}_1^\top
+= \begin{bmatrix} 0.1 & 0 \\ 0 & 0.1 \end{bmatrix} + \begin{bmatrix} 1 & 2018 \\ 2018 & 4\,072\,324 \end{bmatrix}
+= \begin{bmatrix} 1.10 & 2018.00 \\ 2018.00 & 4\,072\,324.10 \end{bmatrix}
+\]
+
+\textbf{Step 3 --- Compute innovation:}
+\[
+y_1 - \boldsymbol{x}_1^\top \hat{\boldsymbol{\theta}}_0
+= 2.930 - \begin{bmatrix} 1 & 2018 \end{bmatrix} \begin{bmatrix} 0 \\ 0 \end{bmatrix}
+= 2.930 - 0
+= 2.930
+\]
+
+\textbf{Step 4 --- Compute $\hat{\boldsymbol{\theta}}_1$:}
+\[
+\hat{\boldsymbol{\theta}}_1
+= \hat{\boldsymbol{\theta}}_0 + \boldsymbol{R}_1^{-1} \boldsymbol{x}_1 \cdot 2.930
+= \begin{bmatrix} 0 \\ 0 \end{bmatrix} + \boldsymbol{R}_1^{-1} \begin{bmatrix} 1 \\ 2018 \end{bmatrix} \cdot 2.930
+= \begin{bmatrix} 0.000001 \\ 0.001452 \end{bmatrix}
+\approx \begin{bmatrix} 0 \\ 0.00145 \end{bmatrix}
+\]
+
+\vspace{1em}
+
+%% ----------------------------------------
+\subsection*{Iteration $t=2$}
+%% ----------------------------------------
+
+\textbf{Given:}
+\[
+\boldsymbol{x}_2 = \begin{bmatrix} 1 \\ 2018.083 \end{bmatrix}, \qquad y_2 = 2.934
+\]
+
+\textbf{Step 1 --- Compute $\boldsymbol{x}_2 \boldsymbol{x}_2^\top$:}
+\[
+\boldsymbol{x}_2 \boldsymbol{x}_2^\top
+= \begin{bmatrix} 1 \\ 2018.083 \end{bmatrix} \begin{bmatrix} 1 & 2018.083 \end{bmatrix}
+= \begin{bmatrix} 1 & 2018.083 \\ 2018.083 & 4\,072\,660.34 \end{bmatrix}
+\]
+
+\textbf{Step 2 --- Compute $\boldsymbol{R}_2$:}
+\[
+\boldsymbol{R}_2 = \boldsymbol{R}_1 + \boldsymbol{x}_2 \boldsymbol{x}_2^\top
+= \begin{bmatrix} 1.10 & 2018.00 \\ 2018.00 & 4\,072\,324.10 \end{bmatrix}
++ \begin{bmatrix} 1 & 2018.083 \\ 2018.083 & 4\,072\,660.34 \end{bmatrix}
+\]
+\[
+= \begin{bmatrix} 2.10 & 4036.08 \\ 4036.08 & 8\,144\,984.44 \end{bmatrix}
+\]
+
+\textbf{Step 3 --- Compute innovation:}
+\[
+\boldsymbol{x}_2^\top \hat{\boldsymbol{\theta}}_1
+= \begin{bmatrix} 1 & 2018.083 \end{bmatrix} \begin{bmatrix} 0.000001 \\ 0.001452 \end{bmatrix}
+= 1 \times 0.000001 + 2018.083 \times 0.001452
+= 2.931
+\]
+\[
+y_2 - \boldsymbol{x}_2^\top \hat{\boldsymbol{\theta}}_1 = 2.934 - 2.931 = 0.003
+\]
+
+\textbf{Step 4 --- Compute $\hat{\boldsymbol{\theta}}_2$:}
+\[
+\hat{\boldsymbol{\theta}}_2
+= \hat{\boldsymbol{\theta}}_1 + \boldsymbol{R}_2^{-1} \boldsymbol{x}_2 \cdot 0.003
+= \begin{bmatrix} 0.000001 \\ 0.001452 \end{bmatrix} + \boldsymbol{R}_2^{-1} \begin{bmatrix} 1 \\ 2018.083 \end{bmatrix} \cdot 0.003
+= \begin{bmatrix} 0.000000 \\ 0.001453 \end{bmatrix}
+\approx \begin{bmatrix} 0 \\ 0.00145 \end{bmatrix}
+\]
+
+\vspace{1em}
+\hrule
+\vspace{1em}
+
+\textbf{Comment:} After just 2 observations the intercept $\hat\theta_1 \approx 0$ because with $x$-values around 2018, the slope $\hat\theta_2$ absorbs most of the signal. The estimates will stabilize as more data arrives. Note that we do not need to invert $\boldsymbol{R}_t$ by hand --- the key point is to show the \emph{structure} of the recursion.
+
+\end{document}

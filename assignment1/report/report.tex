@@ -1,0 +1,481 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Packages ──────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{enumitem}
+\usepackage{parskip}
+
+\hypersetup{colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue}
+
+% ── Title ─────────────────────────────────────────────────────
+\title{%
+  \textbf{Assignment 1} \\[4pt]
+  \large 02417 Time Series Analysis --- Spring 2025 \\
+  \large Technical University of Denmark
+}
+\author{
+  Author 1 (sXXXXXX) \and
+  Author 2 (sXXXXXX) \and
+  Author 3 (sXXXXXX)
+}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+% ==============================================================
+\section{Plot Data}
+% ==============================================================
+
+\subsection{Training Data (1.1)}
+
+We construct the time variable $x$ such that January 2018 maps to $x_1 = 2018$, February 2018 to $x_2 = 2018 + 1/12$, and so on.  The target variable $y$ is the total number of registered vehicles in millions.  The training set consists of $N=72$ monthly observations from January 2018 to December 2023.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{fig_1_1_training_data.png}
+  \caption{Training data: total registered vehicles in Denmark (millions) versus time.}
+  \label{fig:training}
+\end{figure}
+
+\subsection{Description of the Time Series (1.2)}
+
+The training data shows a clear upward trend from approximately 2.930~million vehicles in January 2018 to 3.228~million in December 2023.  The growth appears roughly linear overall, with a slight slowdown around 2019--2020 that may be associated with the COVID-19 pandemic.  After 2020 the growth resumes, though the rate appears to decelerate slightly toward the end of the training period (2022--2023).  There are also small month-to-month fluctuations, with slight seasonal dips in autumn/winter.
+
+% ==============================================================
+\section{Linear Trend Model}
+% ==============================================================
+
+\subsection{Matrix Form (2.1)}
+
+We fit the general linear model
+\begin{equation}
+  Y_t = \theta_1 + \theta_2 \, x_t + \varepsilon_t, \qquad \varepsilon_t \sim N(0,\sigma^2), \quad t=1,\dots,N.
+  \label{eq:glm}
+\end{equation}
+
+In matrix form for the first three time points:
+\[
+  \underbrace{
+  \begin{bmatrix} Y_1 \\ Y_2 \\ Y_3 \end{bmatrix}
+  }_{\boldsymbol{y}}
+  =
+  \underbrace{
+  \begin{bmatrix} 1 & x_1 \\ 1 & x_2 \\ 1 & x_3 \end{bmatrix}
+  }_{\boldsymbol{X}}
+  \underbrace{
+  \begin{bmatrix} \theta_1 \\ \theta_2 \end{bmatrix}
+  }_{\boldsymbol{\theta}}
+  +
+  \underbrace{
+  \begin{bmatrix} \varepsilon_1 \\ \varepsilon_2 \\ \varepsilon_3 \end{bmatrix}
+  }_{\boldsymbol{\varepsilon}}
+\]
+
+Inserting the actual values (3~decimal places):
+\[
+  \boldsymbol{y} = \begin{bmatrix} 2.930 \\ 2.934 \\ 2.941 \end{bmatrix}, \qquad
+  \boldsymbol{X} = \begin{bmatrix} 1 & 2018.000 \\ 1 & 2018.083 \\ 1 & 2018.167 \end{bmatrix}.
+\]
+
+\textbf{Hand-written calculations by each group member:}
+
+%% TODO: Insert photos/scans of each group member's hand-written matrix form below.
+%% Example:
+%% \begin{figure}[H]
+%%   \centering
+%%   \includegraphics[width=0.6\textwidth]{handwritten_2_1_author1.jpg}
+%%   \caption{Hand-written matrix form -- Author 1.}
+%% \end{figure}
+
+\textit{[Insert hand-written pictures for each group member here.]}
+
+% ==============================================================
+\section{OLS --- Global Linear Trend Model}
+% ==============================================================
+
+\subsection{Parameter Estimation (3.1)}
+
+The OLS estimator is
+\[
+  \hat{\boldsymbol{\theta}} = (\boldsymbol{X}^\top \boldsymbol{X})^{-1} \boldsymbol{X}^\top \boldsymbol{y}.
+\]
+
+Applied to the training data ($N=72$, $p=2$):
+\[
+  \hat\theta_1 = -110.3554, \qquad \hat\theta_2 = 0.05615.
+\]
+
+The intercept $\hat\theta_1$ represents the estimated number of vehicles (in millions) at $x=0$, and $\hat\theta_2$ is the estimated monthly growth per year. The positive slope confirms the upward trend observed visually.
+
+\subsection{Standard Errors and Fitted Line (3.2)}
+
+The residual variance is estimated as
+\[
+  \hat\sigma^2 = \frac{\boldsymbol{e}^\top \boldsymbol{e}}{N-p} = 6.828 \times 10^{-4}, \qquad \hat\sigma = 0.02613.
+\]
+
+The variance--covariance matrix of the parameter estimates is $V[\hat{\boldsymbol{\theta}}] = \hat\sigma^2 (\boldsymbol{X}^\top\boldsymbol{X})^{-1}$, yielding standard errors:
+\[
+  \text{SE}(\hat\theta_1) = 3.5936, \qquad \text{SE}(\hat\theta_2) = 0.001778.
+\]
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{fig_3_2_ols_fit.png}
+  \caption{OLS fitted line overlaid on the training observations.}
+  \label{fig:ols_fit}
+\end{figure}
+
+\subsection{Forecast and Prediction Intervals (3.3)}
+
+For a new observation at time $x_{\text{new}}$, the predicted value is $\hat{Y}_{\text{new}} = \boldsymbol{x}_{\text{new}}^\top \hat{\boldsymbol{\theta}}$, with 95\% prediction interval:
+\[
+  \hat{Y}_{\text{new}} \pm t_{0.025}(N-p)\;\hat\sigma\;\sqrt{1 + \boldsymbol{x}_{\text{new}}^\top (\boldsymbol{X}^\top\boldsymbol{X})^{-1} \boldsymbol{x}_{\text{new}}},
+\]
+where $t_{0.025}(70) = 1.9944$.
+
+\begin{table}[H]
+\centering
+\caption{OLS forecast for the test set (2024) with 95\% prediction intervals.}
+\label{tab:ols_forecast}
+\begin{tabular}{lccccc}
+\toprule
+Month & Predicted & Lower PI & Upper PI & Actual \\
+\midrule
+Jan & 3.2812 & 3.2276 & 3.3347 & 3.2238 \\
+Feb & 3.2858 & 3.2322 & 3.3395 & 3.2238 \\
+Mar & 3.2905 & 3.2368 & 3.3442 & 3.2312 \\
+Apr & 3.2952 & 3.2414 & 3.3489 & 3.2376 \\
+May & 3.2999 & 3.2460 & 3.3537 & 3.2446 \\
+Jun & 3.3045 & 3.2507 & 3.3584 & 3.2551 \\
+Jul & 3.3092 & 3.2553 & 3.3632 & 3.2546 \\
+Aug & 3.3139 & 3.2599 & 3.3679 & 3.2581 \\
+Sep & 3.3186 & 3.2645 & 3.3727 & 3.2565 \\
+Oct & 3.3233 & 3.2691 & 3.3774 & 3.2523 \\
+Nov & 3.3279 & 3.2737 & 3.3822 & 3.2531 \\
+Dec & 3.3326 & 3.2783 & 3.3869 & 3.2580 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Forecast Plot (3.4)}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.92\textwidth]{fig_3_4_ols_forecast.png}
+  \caption{Training data, OLS fitted line, 12-month forecast with 95\% prediction intervals, and actual test data.}
+  \label{fig:ols_forecast}
+\end{figure}
+
+\subsection{Commentary on the Forecast (3.5)}
+
+The OLS forecast systematically overestimates the test data: the test RMSE is $0.0617$~million, and only 1 out of 12 actual test values falls inside the 95\% prediction interval. This is because the global OLS trend is fitted to all 72 training points, many of which come from periods of faster growth (2020--2021). The recent slowdown in growth (2022--2023) is not captured well by the global model, leading to upward-biased predictions.
+
+\subsection{Residual Diagnostics (3.6)}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{fig_3_6_ols_residuals.png}
+  \caption{OLS residual diagnostics: (a)~residuals vs.\ time, (b)~histogram with normal density, (c)~QQ-plot, (d)~autocorrelation function with 95\% bounds at $\pm 1.96/\sqrt{N}$.}
+  \label{fig:ols_residuals}
+\end{figure}
+
+The residual analysis reveals that the model assumptions are \textbf{not fully satisfied}:
+\begin{itemize}[nosep]
+  \item \textbf{(a)} Residuals vs.\ time show a clear non-random pattern: negative at the start, positive in the middle, and negative again at the end. This suggests the linear model does not capture the curvature in the data.
+  \item \textbf{(b)} The histogram is roughly bell-shaped, though with some asymmetry.
+  \item \textbf{(c)} The QQ-plot shows deviations from the normal line in the tails.
+  \item \textbf{(d)} The ACF shows strong autocorrelation at many lags, well above the 95\% significance bounds ($\pm 0.231$). The independence assumption is clearly violated.
+\end{itemize}
+
+% ==============================================================
+\section{WLS --- Local Linear Trend Model}
+% ==============================================================
+
+We now fit the same linear model using WLS with exponential forgetting, where observation $i$ receives weight $w_i = \lambda^{N-1-i}$, giving weight~1 to the most recent observation and $\lambda^{N-1}$ to the oldest. We set $\lambda=0.9$.
+
+\subsection{Variance--Covariance Matrix (4.1)}
+
+The WLS estimator is $\hat{\boldsymbol{\theta}}_{\text{WLS}} = (\boldsymbol{X}^\top \boldsymbol{\Sigma}^{-1} \boldsymbol{X})^{-1} \boldsymbol{X}^\top \boldsymbol{\Sigma}^{-1} \boldsymbol{y}$, where $V[\boldsymbol{\varepsilon}] = \sigma^2 \boldsymbol{\Sigma}$ and $\boldsymbol{\Sigma}^{-1} = \boldsymbol{W} = \text{diag}(w_1,\dots,w_N)$.
+
+The $72\times 72$ matrix $\boldsymbol{\Sigma}$ is diagonal with $\Sigma_{ii} = 1/w_i = \lambda^{-(N-1-i)}$:
+\[
+  \boldsymbol{\Sigma} = \text{diag}\!\Big(\underbrace{\lambda^{-71}}_{1773.3},\; \lambda^{-70},\; \dots,\; \underbrace{\lambda^{-1}}_{1.111},\; \underbrace{1}_{1.000}\Big).
+\]
+
+\textbf{Comparison with OLS:} In OLS, $\boldsymbol{\Sigma} = \boldsymbol{I}$ (all diagonal entries equal~1). In the WLS model, old observations have high variance (low trust) and recent observations have low variance (high trust), effectively down-weighting old data.
+
+\subsection{Weight Plot (4.2)}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{fig_4_2_weights.png}
+  \caption{$\lambda$-weights vs.\ time for $\lambda=0.9$. The latest time point has the highest weight.}
+  \label{fig:weights}
+\end{figure}
+
+The latest time point (Dec~2023) has weight~1, while the oldest (Jan~2018) has weight $0.9^{71}\approx 0.00056$.
+
+\subsection{Sum of Weights (4.3)}
+
+The sum of weights is
+\[
+  \sum_{i=0}^{N-1} \lambda^i = \frac{1-\lambda^N}{1-\lambda} = \frac{1 - 0.9^{72}}{0.1} \approx 9.995.
+\]
+For OLS, all weights equal~1, giving a sum of $N=72$.  The effective sample size of WLS with $\lambda=0.9$ is approximately~10, much smaller than~72.
+
+\subsection{Parameter Estimates (4.4)}
+
+\[
+  \hat\theta_{1,\text{WLS}} = -52.483, \qquad \hat\theta_{2,\text{WLS}} = 0.02753.
+\]
+
+The WLS slope is roughly half the OLS slope ($0.0275$ vs.\ $0.0561$), reflecting the fact that the recent growth rate is slower than the historical average.
+
+\subsection{Forecast and Comparison (4.5)}
+
+We forecast the 12 test months using WLS and compute prediction intervals analogously to OLS, using $\hat\sigma^2_{\text{WLS}} = \sum w_i e_i^2 / (N-p) = 3.90 \times 10^{-5}$ and $(\boldsymbol{X}^\top\boldsymbol{W}\boldsymbol{X})^{-1}$ in place of $(\boldsymbol{X}^\top\boldsymbol{X})^{-1}$.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.92\textwidth]{fig_4_5_ols_vs_wls.png}
+  \caption{OLS vs.\ WLS ($\lambda=0.9$) forecasts with 95\% prediction intervals and actual test data.}
+  \label{fig:ols_vs_wls}
+\end{figure}
+
+The WLS forecast (test RMSE~$= 0.0082$) is dramatically better than OLS (RMSE~$= 0.0617$). WLS captures the recent, slower growth rate much more accurately.  The WLS prediction intervals are also much narrower due to the smaller residual variance. We would clearly choose the WLS predictions.
+
+\subsection{Multiple $\lambda$ Values (4.6, Optional)}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.92\textwidth]{fig_4_6_multi_lambda_wls.png}
+  \caption{WLS forecasts for multiple $\lambda$ values compared to OLS and test data.}
+  \label{fig:multi_lambda}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{WLS parameter estimates and test RMSE for different $\lambda$.}
+\label{tab:multi_lambda}
+\begin{tabular}{crrr}
+\toprule
+$\lambda$ & $\hat\theta_1$ & $\hat\theta_2$ & Test RMSE \\
+\midrule
+1.00 (OLS) & $-110.355$ & $0.05615$ & $0.0617$ \\
+0.99 & $-107.098$ & $0.05453$ & $0.0563$ \\
+0.90 & $-52.483$ & $0.02753$ & $0.0082$ \\
+0.80 & $-21.528$ & $0.01223$ & $0.0156$ \\
+0.70 & $-15.740$ & $0.00937$ & $0.0179$ \\
+0.60 & $-11.324$ & $0.00719$ & $0.0194$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+As $\lambda$ decreases, the slope becomes shallower because the model focuses on the most recent period where growth was slow. The best test RMSE is achieved at $\lambda=0.9$. Values of $\lambda$ close to~1 behave like OLS and overpredict; very small $\lambda$ (0.6--0.7) produce a nearly flat forecast and slightly underpredict. The slopes correspond to what we expect: $\lambda=0.99$ gives a slope similar to OLS (global), while $\lambda=0.6$ reflects only the last few months.
+
+% ==============================================================
+\section{Recursive Estimation and Optimization of $\lambda$}
+% ==============================================================
+
+\subsection{RLS Update Equations (5.1)}
+
+The Recursive Least Squares algorithm updates at each time step $t$:
+\begin{align}
+  \boldsymbol{R}_t &= \lambda\,\boldsymbol{R}_{t-1} + \boldsymbol{x}_t \boldsymbol{x}_t^\top, \label{eq:rls_R}\\
+  \hat{\boldsymbol{\theta}}_t &= \hat{\boldsymbol{\theta}}_{t-1} + \boldsymbol{R}_t^{-1} \boldsymbol{x}_t \big(Y_t - \boldsymbol{x}_t^\top \hat{\boldsymbol{\theta}}_{t-1}\big). \label{eq:rls_theta}
+\end{align}
+
+We initialize with $\boldsymbol{R}_0 = 0.1\,\boldsymbol{I}$ and $\hat{\boldsymbol{\theta}}_0 = [0,\;0]^\top$.
+
+\paragraph{Iteration $t=1$ ($\lambda=1$):}
+With $\boldsymbol{x}_1 = [1,\;2018]^\top$ and $y_1 = 2.930$:
+\[
+  \boldsymbol{R}_1 = 0.1\,\boldsymbol{I} + \boldsymbol{x}_1\boldsymbol{x}_1^\top
+  = \begin{bmatrix} 1.10 & 2018.00 \\ 2018.00 & 4\,072\,324.10 \end{bmatrix}.
+\]
+Innovation: $y_1 - \boldsymbol{x}_1^\top\hat{\boldsymbol{\theta}}_0 = 2.930$.
+\[
+  \hat{\boldsymbol{\theta}}_1 = \hat{\boldsymbol{\theta}}_0 + \boldsymbol{R}_1^{-1}\boldsymbol{x}_1 \cdot 2.930 = \begin{bmatrix} 0.000001 \\ 0.001452 \end{bmatrix}.
+\]
+
+\paragraph{Iteration $t=2$:}
+With $\boldsymbol{x}_2 = [1,\;2018.083]^\top$ and $y_2 = 2.934$:
+\[
+  \boldsymbol{R}_2 = \boldsymbol{R}_1 + \boldsymbol{x}_2\boldsymbol{x}_2^\top
+  = \begin{bmatrix} 2.10 & 4036.08 \\ 4036.08 & 8\,144\,984.44 \end{bmatrix}.
+\]
+Innovation: $y_2 - \boldsymbol{x}_2^\top\hat{\boldsymbol{\theta}}_1 = 0.00344$.
+\[
+  \hat{\boldsymbol{\theta}}_2 = \begin{bmatrix} 0.000000 \\ 0.001453 \end{bmatrix}.
+\]
+
+\textbf{Hand-written calculations by each group member:}
+
+%% TODO: Insert photos/scans of hand-written RLS calculations.
+\textit{[Insert hand-written pictures for each group member here.]}
+
+\subsection{RLS Estimates up to $t=3$ (5.2)}
+
+Running the RLS algorithm with $\lambda=1$ (no forgetting):
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ccc}
+\toprule
+$t$ & $\hat\theta_{1,t}$ & $\hat\theta_{2,t}$ \\
+\midrule
+1 & 0.000001 & 0.001452 \\
+2 & 0.000000 & 0.001453 \\
+3 & $-0.000004$ & 0.001455 \\
+\bottomrule
+\end{tabular}
+\caption{RLS parameter estimates for the first three time steps.}
+\end{table}
+
+The estimates change rapidly initially as the algorithm adjusts from the initial guess $[0,0]^\top$.  With only a few observations and $p=2$ parameters, the intercept and slope are not yet well separated --- most of the signal is absorbed by $\hat\theta_2$.  As more data arrives, the updates become smaller and the estimates stabilize.  This is intuitive: early observations carry a lot of information relative to the prior, while later ones only refine the estimates.
+
+\subsection{RLS at $t=N$ vs.\ OLS (5.3)}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrr}
+\toprule
+Method & $\hat\theta_1$ & $\hat\theta_2$ \\
+\midrule
+OLS & $-110.355$ & $0.05615$ \\
+RLS ($R_0=0.1\boldsymbol{I}$) & $-0.058$ & $0.00157$ \\
+RLS ($R_0=10^{-6}\boldsymbol{I}$) & $-108.307$ & $0.05513$ \\
+RLS ($R_0=10^{-8}\boldsymbol{I}$) & $-110.335$ & $0.05613$ \\
+\bottomrule
+\end{tabular}
+\caption{Effect of $R_0$ on the RLS estimate at $t=N$ compared to OLS.}
+\label{tab:rls_vs_ols}
+\end{table}
+
+With the default $R_0=0.1\,\boldsymbol{I}$, the RLS estimate at $t=N$ is very different from OLS.  This is because the design matrix $\boldsymbol{X}^\top\boldsymbol{X}$ is extremely ill-conditioned (condition number~$\sim\!10^{13}$) due to the large $x$-values ($\approx 2018$--$2024$).  The RLS effectively computes $(\boldsymbol{R}_0 + \boldsymbol{X}^\top\boldsymbol{X})^{-1}\boldsymbol{X}^\top\boldsymbol{y}$, and adding $R_0=0.1\,\boldsymbol{I}$ changes the smallest eigenvalue of $\boldsymbol{X}^\top\boldsymbol{X}$ from~$\sim\!3\times 10^{-5}$ to~$\sim\!0.1$, drastically altering the inverse.
+
+Importantly, both parameterizations give similar \emph{fitted values} ($\approx 3.1$ at $x=2020$), but very different intercept/slope decompositions due to collinearity.  With $R_0 = 10^{-8}\boldsymbol{I}$, the regularization becomes negligible and RLS converges very close to OLS.
+
+\textbf{Lesson:} For ill-conditioned problems, $R_0$ must be much smaller than the smallest eigenvalue of $\boldsymbol{X}^\top\boldsymbol{X}$ for RLS($\lambda=1$) to match OLS.
+
+\subsection{RLS with Forgetting (5.4)}
+
+We run RLS with $\lambda=0.7$ (strong forgetting) and $\lambda=0.99$ (weak forgetting), skipping the first 4 burn-in points.
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.48\textwidth}
+    \includegraphics[width=\textwidth]{fig_5_4a_theta1.png}
+    \caption{$\hat\theta_{1,t}$ (intercept)}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.48\textwidth}
+    \includegraphics[width=\textwidth]{fig_5_4b_theta2.png}
+    \caption{$\hat\theta_{2,t}$ (slope)}
+  \end{subfigure}
+  \caption{Time evolution of the RLS parameter estimates for $\lambda=0.7$ and $\lambda=0.99$.}
+  \label{fig:rls_params}
+\end{figure}
+
+With $\lambda=0.7$, the estimates fluctuate strongly as the algorithm reacts to recent changes with short memory.  With $\lambda=0.99$, the estimates are much smoother and evolve slowly.
+
+\paragraph{Comparison with WLS:}
+For $\lambda=0.7$, RLS at $t=N$ closely matches the WLS estimate ($\hat\theta_2 = 0.00937$ for both), because strong forgetting causes the initialization to be effectively ``forgotten''.  For $\lambda=0.99$, RLS at $t=N$ still differs substantially from WLS due to the persistent influence of $R_0$.
+
+\subsection{One-Step Prediction Residuals (5.5)}
+
+The one-step ahead residual is $\hat\varepsilon_{t|t-1} = \boldsymbol{x}_t^\top \hat{\boldsymbol{\theta}}_{t-1} - y_t$, computed for $t=5,\dots,N$ (removing the first 4~points as burn-in).
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{fig_5_5_one_step_residuals.png}
+  \caption{One-step prediction residuals for $\lambda=0.7$ and $\lambda=0.99$.}
+  \label{fig:one_step}
+\end{figure}
+
+The residuals for $\lambda=0.7$ are generally smaller because the model adapts quickly to recent data.  The $\lambda=0.99$ residuals are larger and show more persistent deviations, similar to the OLS residuals, as the model is slow to track changes.  Both series appear to have similar variability after the initial burn-in period.
+
+\subsection{Optimization of $\lambda$ (5.6)}
+
+We compute the $k$-step RMSE for horizons $k=1,\dots,12$ and $\lambda \in \{0.50, 0.51, \dots, 0.99\}$:
+\[
+  \text{RMSE}_k = \sqrt{\frac{1}{M}\sum_{t} \big(\boldsymbol{x}_t^\top \hat{\boldsymbol{\theta}}_{t-k} - y_t\big)^2},
+\]
+where the sum runs over all $t$ with $\hat{\boldsymbol{\theta}}_{t-k}$ past the burn-in period.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{fig_5_6_rmse_heatmap.png}
+  \caption{Heatmap of $k$-step RMSE as a function of $\lambda$ and forecast horizon~$k$. Darker colours indicate lower RMSE.}
+  \label{fig:rmse_heatmap}
+\end{figure}
+
+The heatmap shows that lower $\lambda$ values (more forgetting) consistently yield lower RMSE across all horizons, with $\lambda=0.50$ performing best for every~$k$. The RMSE increases with the forecast horizon, as expected. For this dataset, where the growth rate changes over time, strong forgetting produces the best in-sample predictions because it tracks local trends effectively.
+
+One could let $\lambda$ depend on the horizon, but here a single value of $\lambda=0.50$ dominates.
+
+\subsection{Test Set Predictions (5.7)}
+
+Using RLS with $\lambda=0.50$ (the overall best), we predict the 12 test months and compare all three methods.
+
+\begin{table}[H]
+\centering
+\caption{Test set predictions: OLS, WLS ($\lambda=0.9$), RLS ($\lambda=0.50$), and actual values.}
+\label{tab:comparison}
+\begin{tabular}{lcccc}
+\toprule
+Month & OLS & WLS ($\lambda\!=\!0.9$) & RLS ($\lambda\!=\!0.50$) & Actual \\
+\midrule
+Jan & 3.2812 & 3.2377 & 3.2266 & 3.2238 \\
+Feb & 3.2858 & 3.2400 & 3.2274 & 3.2238 \\
+Mar & 3.2905 & 3.2422 & 3.2281 & 3.2312 \\
+Apr & 3.2952 & 3.2445 & 3.2288 & 3.2376 \\
+May & 3.2999 & 3.2468 & 3.2295 & 3.2446 \\
+Jun & 3.3045 & 3.2491 & 3.2303 & 3.2551 \\
+Jul & 3.3092 & 3.2514 & 3.2310 & 3.2546 \\
+Aug & 3.3139 & 3.2537 & 3.2317 & 3.2581 \\
+Sep & 3.3186 & 3.2560 & 3.2325 & 3.2565 \\
+Oct & 3.3233 & 3.2583 & 3.2332 & 3.2523 \\
+Nov & 3.3279 & 3.2606 & 3.2339 & 3.2531 \\
+Dec & 3.3326 & 3.2629 & 3.2347 & 3.2580 \\
+\midrule
+\textbf{RMSE} & \textbf{0.0617} & \textbf{0.0082} & \textbf{0.0184} & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.92\textwidth]{fig_5_7_all_methods.png}
+  \caption{Comparison of all three methods on the test set.}
+  \label{fig:all_methods}
+\end{figure}
+
+OLS substantially overestimates (RMSE~$=0.062$) because the global slope is too steep.  WLS with $\lambda=0.9$ provides the best test set predictions (RMSE~$=0.008$) by adapting to the recent, slower growth.  RLS with $\lambda=0.50$ slightly underestimates (RMSE~$=0.018$) because the very short memory produces a nearly flat slope. All adaptive methods outperform OLS significantly.
+
+\subsection{Reflections (5.8)}
+
+\begin{itemize}
+  \item \textbf{Overfitting vs.\ underfitting:} Small $\lambda$ (strong forgetting) makes the model reactive to recent noise, risking overfitting. Large $\lambda$ produces smoother but potentially outdated estimates, risking underfitting when the process changes.
+
+  \item \textbf{Time-dependent test sets:} Unlike cross-sectional data where random splits work, time series requires chronological splits. The test set lies in the future, so the model must extrapolate. Structural breaks between training and test periods can invalidate the evaluation.
+
+  \item \textbf{Recursive estimation advantages:} RLS can adapt to changing patterns by down-weighting old data. This is particularly valuable for time-dependent data where the underlying process may shift. However, the method still assumes that recent trends continue.
+
+  \item \textbf{Other techniques:} Kalman filtering provides optimal recursive estimation with separate process and observation noise. Exponential smoothing methods (Holt, Holt--Winters) handle trends and seasonality. ARIMA/SARIMA models capture autocorrelation structure. Rolling-window OLS offers a simple alternative to exponential forgetting. Bayesian online learning provides principled uncertainty quantification.
+
+  \item \textbf{Additional considerations:} The optimal $\lambda$ may depend on the forecast horizon, suggesting that no single forgetting factor is universally best. An adaptive $\lambda$ that changes over time could be beneficial. The sensitivity to initialization ($R_0$, $\hat{\boldsymbol\theta}_0$) is important for short series and ill-conditioned problems, but diminishes as more data is observed.
+\end{itemize}
+
+\end{document}
